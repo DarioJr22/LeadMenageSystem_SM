@@ -55,12 +55,14 @@ export function LeadCard({ lead, onClick }: LeadCardProps) {
           </div>
         )}
 
-        <div className="flex items-center gap-2 text-gray-500 pt-2 border-t border-gray-100">
-          <Calendar size={14} />
-          <span>
-            {new Date(lead.dataCriacao).toLocaleDateString('pt-BR')}
-          </span>
-        </div>
+        {lead.createdAt && (
+          <div className="flex items-center gap-2 text-gray-500 pt-2 border-t border-gray-100">
+            <Calendar size={14} />
+            <span>
+              {new Date(lead.createdAt).toLocaleDateString('pt-BR')}
+            </span>
+          </div>
+        )}
       </div>
 
       {lead.origem && (

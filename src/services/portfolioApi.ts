@@ -9,77 +9,82 @@ export const portfolioApi = axios.create({
   },
 });
 
-// Types
+// Types - Based on Swagger API Documentation
 export interface PortfolioItem {
-  id: string;
+  id: number; // Long no backend
   titulo: string;
   slug: string;
-  descricao: string;
+  descricao?: string;
   categoria: string;
-  cliente?: {
-    id: string;
-    nome: string;
-    empresa?: string;
-  };
-  dataRealizacao: string;
-  tags: string[];
-  imagens: string[];
-  imagemPrincipal: string;
-  linkExterno?: string;
+  cliente?: string;
+  imagemCapa?: string;
+  imagensGaleria?: string[];
+  url?: string[]; // URLs relacionadas ao projeto
+  resultado?: string;
+  tags?: string[];
   destaque: boolean;
-  status: 'ativo' | 'inativo';
-  criadoEm: string;
-  atualizadoEm: string;
+  ordem: number;
+  ativo: boolean;
+  createdAt?: string;
 }
 
 export interface CreatePortfolioDTO {
   titulo: string;
-  slug: string;
-  descricao: string;
+  slug?: string; // Será gerado automaticamente se não fornecido
+  descricao?: string;
   categoria: string;
-  clienteId?: string;
-  dataRealizacao?: string;
+  cliente?: string;
+  resultado?: string;
   tags?: string[];
-  linkExterno?: string;
   destaque?: boolean;
-  status?: 'ativo' | 'inativo';
+  ordem?: number;
+  ativo?: boolean;
 }
 
-export interface CreatePortfolioComImagensDTO extends CreatePortfolioDTO {
-  imagens: string[];
-}
-
-// API Functions
+// API Functions - Endpoints conforme Swagger
 export const portfolioApiService = {
-  // Listagem e Consulta
+  // GET /api/portfolio - Listar todos os itens do portfólio
   getAll: () => portfolioApi.get<PortfolioItem[]>('/portfolio'),
   
+  // GET /api/portfolio/{slug} - Buscar item por slug
   getBySlug: (slug: string) => portfolioApi.get<PortfolioItem>(`/portfolio/${slug}`),
   
+  // GET /api/portfolio/destaques - Listar itens em destaque
   getDestaques: () => portfolioApi.get<PortfolioItem[]>('/portfolio/destaques'),
   
+  // GET /api/portfolio/categoria/{categoria} - Listar por categoria
+  // Categorias: SOCIAL_MEDIA, DESIGN, AUDIOVISUAL, TRAFEGO
   getByCategoria: (categoria: string) => 
     portfolioApi.get<PortfolioItem[]>(`/portfolio/categoria/${categoria}`),
   
-  // Criação
+  // POST /api/portfolio - Criar novo item
   create: (data: CreatePortfolioDTO) => 
     portfolioApi.post<PortfolioItem>('/portfolio', data),
   
-  createComImagens: (data: CreatePortfolioComImagensDTO) => 
-    portfolioApi.post<PortfolioItem>('/portfolio/com-imagens', data),
-  
-  // Atualização (inferido, não especificado mas necessário)
-  update: (id: string, data: Partial<CreatePortfolioDTO>) => 
-    portfolioApi.put<PortfolioItem>(`/portfolio/${id}`, data),
-  
-  updateComImagens: (id: string, data: Partial<CreatePortfolioComImagensDTO>) => 
-    portfolioApi.put<PortfolioItem>(`/portfolio/${id}/com-imagens`, data),
-  
-  // Exclusão (inferido)
-  delete: (id: string) => portfolioApi.delete(`/portfolio/${id}`),
+  // POST /api/portfolio/com-imagens - Criar item com URLs de imagens
+  // Parâmetros via query string
+  createComImagens: (params: {
+    urlsImagens: string; // URLs separadas por vírgula
+    titulo: string;
+    descricao?: string;
+    categoria: string;
+    cliente?: string;
+    resultado?: string;
+    tags?: string; // Tags separadas por vírgula
+    destaque?: boolean;
+    ordem?: number;
+  }) => portfolioApi.post<PortfolioItem>('/portfolio/com-imagens', null, { params }),
 };
 
-// Categorias predefinidas
+// Categorias conforme Swagger
+export const CATEGORIAS_SWAGGER = [
+  { value: 'SOCIAL_MEDIA', label: 'Social Media', color: 'bg-blue-100 text-blue-700' },
+  { value: 'DESIGN', label: 'Design', color: 'bg-purple-100 text-purple-700' },
+  { value: 'AUDIOVISUAL', label: 'Audiovisual', color: 'bg-pink-100 text-pink-700' },
+  { value: 'TRAFEGO', label: 'Tráfego', color: 'bg-green-100 text-green-700' },
+];
+
+// Categorias antigas (mantidas para compatibilidade - deprecated)
 export const CATEGORIAS = [
   { value: 'Web Design', label: 'Web Design', color: 'bg-blue-100 text-blue-700' },
   { value: 'Marketing Digital', label: 'Marketing Digital', color: 'bg-purple-100 text-purple-700' },
@@ -105,8 +110,8 @@ export function generateSlug(titulo: string): string {
     .replace(/-+/g, '-'); // Remove hífens duplicados
 }
 
-// Função para obter cor da categoria
+// Função para obter cor da categoria (usa categorias do Swagger)
 export function getCategoriaColor(categoria: string): string {
-  const cat = CATEGORIAS.find(c => c.value === categoria);
+  const cat = CATEGORIAS_SWAGGER.find(c => c.value === categoria);
   return cat?.color || 'bg-gray-100 text-gray-700';
 }

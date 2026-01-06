@@ -19,7 +19,7 @@ export function PortfolioGrid({
   onDelete,
   loading = false,
 }: PortfolioGridProps) {
-  const handleDelete = async (projetoId: string) => {
+  const handleDelete = async (projetoId: number) => {
     try {
       await portfolioApiService.delete(projetoId);
       onDelete(projetoId);

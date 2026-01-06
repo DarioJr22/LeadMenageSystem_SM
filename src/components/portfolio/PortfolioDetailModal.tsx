@@ -20,7 +20,7 @@ interface PortfolioDetailModalProps {
   allProjetos: PortfolioItem[];
   onClose: () => void;
   onEdit: (projeto: PortfolioItem) => void;
-  onDelete: (projetoId: string) => void;
+  onDelete: (projetoId: number) => void;
   onNavigate: (projeto: PortfolioItem) => void;
 }
 

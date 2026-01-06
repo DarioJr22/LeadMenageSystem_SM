@@ -163,10 +163,7 @@ export function Agendamentos() {
       {selectedAgendamento && (
         <AgendamentoModal
           agendamento={selectedAgendamento}
-          leads={leads}
           onClose={() => setSelectedAgendamento(null)}
-          onUpdate={handleUpdateAgendamento}
-          onDelete={handleDeleteAgendamento}
         />
       )}
     </div>

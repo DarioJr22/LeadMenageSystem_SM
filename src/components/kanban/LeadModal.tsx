@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Edit2, Trash2, Save, Phone, Mail, MessageSquare } from 'lucide-react';
+import { X, Trash2, Phone, Mail, MessageSquare } from 'lucide-react';
 import { type Lead, leadsApi } from '../../services/api';
 import { toast } from 'sonner@2.0.3';
 
@@ -11,33 +11,7 @@ interface LeadModalProps {
 }
 
 export function LeadModal({ lead, onClose, onUpdate, onDelete }: LeadModalProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [formData, setFormData] = useState({
-    nome: lead.nome,
-    email: lead.email,
-    telefone: lead.telefone,
-    empresa: lead.empresa || '',
-    origem: lead.origem || '',
-    responsavel: lead.responsavel || '',
-    observacoes: lead.observacoes || '',
-  });
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const response = await leadsApi.update(lead.id, formData);
-      onUpdate(response.data);
-      setIsEditing(false);
-      toast.success('Lead atualizado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao atualizar lead:', error);
-      toast.error('Erro ao atualizar lead');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const handleDelete = async () => {
     if (!confirm('Tem certeza que deseja excluir este lead?')) return;
@@ -57,8 +31,12 @@ export function LeadModal({ lead, onClose, onUpdate, onDelete }: LeadModalProps)
   };
 
   const handleWhatsApp = () => {
-    const number = lead.telefone.replace(/\D/g, '');
-    window.open(`https://wa.me/55${number}`, '_blank');
+    if (lead.telefone) {
+      const number = lead.telefone.replace(/\D/g, '');
+      window.open(`https://wa.me/55${number}`, '_blank');
+    } else {
+      toast.error('Telefone não disponível');
+    }
   };
 
   const handleEmail = () => {
@@ -66,7 +44,11 @@ export function LeadModal({ lead, onClose, onUpdate, onDelete }: LeadModalProps)
   };
 
   const handleCall = () => {
-    window.open(`tel:${lead.telefone}`, '_blank');
+    if (lead.telefone) {
+      window.open(`tel:${lead.telefone}`, '_blank');
+    } else {
+      toast.error('Telefone não disponível');
+    }
   };
 
   return (
@@ -86,8 +68,7 @@ export function LeadModal({ lead, onClose, onUpdate, onDelete }: LeadModalProps)
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Ações rápidas */}
-          {!isEditing && (
-            <div className="flex gap-2">
+          <div className="flex gap-2">
               <button
                 onClick={handleCall}
                 className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
@@ -110,166 +91,120 @@ export function LeadModal({ lead, onClose, onUpdate, onDelete }: LeadModalProps)
                 WhatsApp
               </button>
             </div>
-          )}
 
-          {/* Formulário */}
+          {/* Dados do Lead */}
           <div className="space-y-4">
             <div>
               <label className="block text-gray-700 mb-2">Nome</label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={formData.nome}
-                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                />
-              ) : (
-                <p className="text-gray-900">{lead.nome}</p>
-              )}
+              <p className="text-gray-900">{lead.nome}</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-gray-700 mb-2">Email</label>
-                {isEditing ? (
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  />
-                ) : (
-                  <p className="text-gray-900">{lead.email}</p>
-                )}
+                <p className="text-gray-900">{lead.email}</p>
               </div>
 
               <div>
                 <label className="block text-gray-700 mb-2">Telefone</label>
-                {isEditing ? (
-                  <input
-                    type="tel"
-                    value={formData.telefone}
-                    onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  />
-                ) : (
-                  <p className="text-gray-900">{lead.telefone}</p>
-                )}
+                <p className="text-gray-900">{lead.telefone || '-'}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-gray-700 mb-2">Empresa</label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={formData.empresa}
-                    onChange={(e) => setFormData({ ...formData, empresa: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  />
-                ) : (
-                  <p className="text-gray-900">{lead.empresa || '-'}</p>
-                )}
+                <p className="text-gray-900">{lead.empresa || '-'}</p>
               </div>
 
               <div>
                 <label className="block text-gray-700 mb-2">Origem</label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={formData.origem}
-                    onChange={(e) => setFormData({ ...formData, origem: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  />
+                <p className="text-gray-900">{lead.origem || '-'}</p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2">Serviços de Interesse</label>
+              <div className="flex flex-wrap gap-2">
+                {lead.servicos && lead.servicos.length > 0 ? (
+                  lead.servicos.map((servico, index) => (
+                    <span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                      {servico}
+                    </span>
+                  ))
                 ) : (
-                  <p className="text-gray-900">{lead.origem || '-'}</p>
+                  <p className="text-gray-900">-</p>
                 )}
               </div>
             </div>
 
-            <div>
-              <label className="block text-gray-700 mb-2">Responsável</label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={formData.responsavel}
-                  onChange={(e) => setFormData({ ...formData, responsavel: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                />
-              ) : (
-                <p className="text-gray-900">{lead.responsavel || '-'}</p>
-              )}
-            </div>
+            {(lead.orcamentoMin || lead.orcamentoMax) && (
+              <div className="grid grid-cols-2 gap-4">
+                {lead.orcamentoMin && (
+                  <div>
+                    <label className="block text-gray-700 mb-2">Orçamento Mínimo</label>
+                    <p className="text-gray-900">R$ {lead.orcamentoMin.toFixed(2)}</p>
+                  </div>
+                )}
+                {lead.orcamentoMax && (
+                  <div>
+                    <label className="block text-gray-700 mb-2">Orçamento Máximo</label>
+                    <p className="text-gray-900">R$ {lead.orcamentoMax.toFixed(2)}</p>
+                  </div>
+                )}
+              </div>
+            )}
 
-            <div>
-              <label className="block text-gray-700 mb-2">Observações</label>
-              {isEditing ? (
-                <textarea
-                  value={formData.observacoes}
-                  onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
-                  rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                />
-              ) : (
-                <p className="text-gray-900">{lead.observacoes || '-'}</p>
-              )}
-            </div>
+            {lead.mensagem && (
+              <div>
+                <label className="block text-gray-700 mb-2">Mensagem</label>
+                <p className="text-gray-900 whitespace-pre-wrap">{lead.mensagem}</p>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+              {lead.prioridade && (
+                <div>
+                  <label className="block text-gray-700 mb-2">Prioridade</label>
+                  <p className="text-gray-900">{lead.prioridade}</p>
+                </div>
+              )}
+
+              {lead.status && (
+                <div>
+                  <label className="block text-gray-700 mb-2">Status</label>
+                  <p className="text-gray-900">{lead.status.replace(/_/g, ' ')}</p>
+                </div>
+              )}
+            </div>
+
+            {lead.createdAt && (
               <div>
                 <label className="block text-gray-700 mb-2">Data de Criação</label>
                 <p className="text-gray-900">
-                  {new Date(lead.dataCriacao).toLocaleDateString('pt-BR')}
+                  {new Date(lead.createdAt).toLocaleString('pt-BR')}
                 </p>
               </div>
-
-              <div>
-                <label className="block text-gray-700 mb-2">Status</label>
-                <p className="text-gray-900">{lead.status.replace(/_/g, ' ')}</p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
         {/* Footer */}
         <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-6 flex items-center justify-between">
-          {isEditing ? (
-            <>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-              >
-                <Save size={16} />
-                {isSaving ? 'Salvando...' : 'Salvar'}
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-              >
-                <Trash2 size={16} />
-                {isDeleting ? 'Excluindo...' : 'Excluir'}
-              </button>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Edit2 size={16} />
-                Editar
-              </button>
-            </>
-          )}
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <Trash2 size={16} />
+            {isDeleting ? 'Excluindo...' : 'Excluir Lead'}
+          </button>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            Fechar
+          </button>
         </div>
       </div>
     </div>

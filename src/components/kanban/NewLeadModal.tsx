@@ -16,16 +16,20 @@ export function NewLeadModal({ onClose, onSuccess }: NewLeadModalProps) {
     telefone: '',
     empresa: '',
     origem: '',
-    responsavel: '',
-    observacoes: '',
-    status: 'NOVO' as Lead['status'],
+    mensagem: '',
+    servicos: [] as string[],
+    orcamentoMin: undefined as number | undefined,
+    orcamentoMax: undefined as number | undefined,
+    prioridade: '',
+    status: '',
   });
+  const [servicoInput, setServicoInput] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome || !formData.email || !formData.telefone) {
-      toast.error('Preencha os campos obrigatórios');
+    if (!formData.nome || !formData.email || formData.servicos.length === 0) {
+      toast.error('Preencha os campos obrigatórios (nome, email e pelo menos um serviço)');
       return;
     }
 
@@ -127,41 +131,70 @@ export function NewLeadModal({ onClose, onSuccess }: NewLeadModalProps) {
             </div>
           </div>
 
-          <div>
-            <label className="block text-gray-700 mb-2">Responsável</label>
-            <input
-              type="text"
-              value={formData.responsavel}
-              onChange={(e) => setFormData({ ...formData, responsavel: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              placeholder="Nome do responsável"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-700 mb-2">Orçamento Mínimo (R$)</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.orcamentoMin || ''}
+                onChange={(e) => setFormData({ ...formData, orcamentoMin: e.target.value ? Number(e.target.value) : undefined })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                placeholder="500.00"
+              />
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2">Orçamento Máximo (R$)</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={formData.orcamentoMax || ''}
+                onChange={(e) => setFormData({ ...formData, orcamentoMax: e.target.value ? Number(e.target.value) : undefined })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                placeholder="5000.00"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-2">Observações</label>
+            <label className="block text-gray-700 mb-2">Mensagem</label>
             <textarea
-              value={formData.observacoes}
-              onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+              value={formData.mensagem}
+              onChange={(e) => setFormData({ ...formData, mensagem: e.target.value })}
               rows={4}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              placeholder="Notas e observações sobre o lead"
+              placeholder="Mensagem ou observações do lead"
             />
           </div>
 
-          <div>
-            <label className="block text-gray-700 mb-2">Status Inicial</label>
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value as Lead['status'] })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-            >
-              <option value="NOVO">Novo</option>
-              <option value="CONTATO_REALIZADO">Contato Realizado</option>
-              <option value="QUALIFICADO">Qualificado</option>
-              <option value="PROPOSTA_ENVIADA">Proposta Enviada</option>
-              <option value="NEGOCIACAO">Negociação</option>
-            </select>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-700 mb-2">Prioridade</label>
+              <select
+                value={formData.prioridade}
+                onChange={(e) => setFormData({ ...formData, prioridade: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              >
+                <option value="">Selecione...</option>
+                <option value="BAIXA">Baixa</option>
+                <option value="MEDIA">Média</option>
+                <option value="ALTA">Alta</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-gray-700 mb-2">Status</label>
+              <input
+                type="text"
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                placeholder="Ex: NOVO, QUALIFICADO"
+              />
+            </div>
           </div>
         </form>
 

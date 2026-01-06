@@ -3,7 +3,7 @@ import { X, Plus, Trash2 } from 'lucide-react';
 import {
   type PortfolioItem,
   portfolioApiService,
-  CATEGORIAS,
+  CATEGORIAS_SWAGGER,
   generateSlug,
 } from '../../services/portfolioApi';
 import { leadsApi, type Lead } from '../../services/api';
@@ -22,16 +22,13 @@ export function PortfolioFormModal({ projeto, onClose, onSuccess }: PortfolioFor
     titulo: projeto?.titulo || '',
     slug: projeto?.slug || '',
     descricao: projeto?.descricao || '',
-    categoria: projeto?.categoria || CATEGORIAS[0].value,
-    clienteId: projeto?.cliente?.id || '',
-    dataRealizacao: projeto?.dataRealizacao
-      ? new Date(projeto.dataRealizacao).toISOString().split('T')[0]
-      : new Date().toISOString().split('T')[0],
+    categoria: projeto?.categoria || CATEGORIAS_SWAGGER[0].value,
+    cliente: projeto?.cliente || '',
+    resultado: projeto?.resultado || '',
     tags: projeto?.tags || [],
-    imagens: projeto?.imagens || [],
-    linkExterno: projeto?.linkExterno || '',
+    imagens: [] as string[], // URLs das imagens
     destaque: projeto?.destaque || false,
-    status: projeto?.status || ('ativo' as const),
+    ordem: projeto?.ordem || 0,
   });
   const [tagInput, setTagInput] = useState('');
   const [imagemInput, setImagemInput] = useState('');
@@ -120,40 +117,39 @@ export function PortfolioFormModal({ projeto, onClose, onSuccess }: PortfolioFor
 
     setSaving(true);
     try {
-      const payload = {
-        titulo: formData.titulo,
-        slug: formData.slug,
-        descricao: formData.descricao,
-        categoria: formData.categoria,
-        clienteId: formData.clienteId || undefined,
-        dataRealizacao: formData.dataRealizacao,
-        tags: formData.tags,
-        linkExterno: formData.linkExterno || undefined,
-        destaque: formData.destaque,
-        status: formData.status,
-        imagens: formData.imagens,
-      };
-
-      let response;
-      if (projeto) {
-        // Edição
-        if (formData.imagens.length > 0) {
-          response = await portfolioApiService.updateComImagens(projeto.id, payload);
-        } else {
-          response = await portfolioApiService.update(projeto.id, payload);
-        }
-        toast.success('Projeto atualizado com sucesso!');
-      } else {
-        // Criação
-        if (formData.imagens.length > 0) {
-          response = await portfolioApiService.createComImagens(payload);
-        } else {
-          response = await portfolioApiService.create(payload);
-        }
+      // Payload conforme Swagger - createComImagens usa query params
+      if (formData.imagens.length > 0) {
+        const params = {
+          urlsImagens: formData.imagens.join(','), // URLs separadas por vírgula
+          titulo: formData.titulo,
+          descricao: formData.descricao,
+          categoria: formData.categoria,
+          cliente: formData.cliente || undefined,
+          resultado: formData.resultado || undefined,
+          tags: formData.tags.join(','), // Tags separadas por vírgula
+          destaque: formData.destaque,
+          ordem: formData.ordem,
+        };
+        const response = await portfolioApiService.createComImagens(params);
         toast.success('Projeto criado com sucesso!');
+        onSuccess(response.data);
+      } else {
+        // Criar sem imagens
+        const payload = {
+          titulo: formData.titulo,
+          slug: formData.slug,
+          descricao: formData.descricao,
+          categoria: formData.categoria,
+          cliente: formData.cliente || undefined,
+          resultado: formData.resultado || undefined,
+          tags: formData.tags,
+          destaque: formData.destaque,
+          ordem: formData.ordem,
+        };
+        const response = await portfolioApiService.create(payload);
+        toast.success('Projeto criado com sucesso!');
+        onSuccess(response.data);
       }
-
-      onSuccess(response.data);
     } catch (error: any) {
       console.error('Erro ao salvar projeto:', error);
       if (error.response?.status === 409) {
@@ -225,7 +221,7 @@ export function PortfolioFormModal({ projeto, onClose, onSuccess }: PortfolioFor
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               required
             >
-              {CATEGORIAS.map((cat) => (
+              {CATEGORIAS_SWAGGER.map((cat) => (
                 <option key={cat.value} value={cat.value}>
                   {cat.label}
                 </option>

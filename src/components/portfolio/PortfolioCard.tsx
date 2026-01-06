@@ -5,7 +5,7 @@ interface PortfolioCardProps {
   projeto: PortfolioItem;
   onProjetoClick: (projeto: PortfolioItem) => void;
   onEdit: (projeto: PortfolioItem) => void;
-  onDelete: (projetoId: string) => void;
+  onDelete: (projetoId: number) => void;
 }
 
 export function PortfolioCard({ projeto, onProjetoClick, onEdit, onDelete }: PortfolioCardProps) {
@@ -23,9 +23,9 @@ export function PortfolioCard({ projeto, onProjetoClick, onEdit, onDelete }: Por
         onClick={() => onProjetoClick(projeto)}
         className="relative h-48 bg-gray-200 overflow-hidden"
       >
-        {projeto.imagemPrincipal ? (
+        {projeto.imagemCapa ? (
           <img
-            src={projeto.imagemPrincipal}
+            src={projeto.imagemCapa}
             alt={projeto.titulo}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
